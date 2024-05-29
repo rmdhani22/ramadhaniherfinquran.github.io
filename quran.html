@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Quran</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous" />
+    <style>
+      @import url('https://fonts.googleapis.com/earlyaccess/amiri.css');
+      body {
+        background-color: #f5f7fa;
+        font-family: 'Roboto', sans-serif;
+      }
+      .content {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .list-group-item {
+        background-color: #ffffff;
+        color: #495057;
+        border: none;
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .list-group-item:hover {
+        background-color: #11d822;
+        color: #ffffff;
+      }
+      #text-arabic {
+        background-color: #ffffff;
+        color: #212529;
+        border: 1px solid #dee2e6;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .fs-3 {
+        color: #343a40;
+      }
+      footer {
+        background-color: #343a40;
+        color: white;
+        padding: 10px;
+      }
+      .ayah {
+        background-color: #f8f9fa;
+        color: #212529;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        position: relative;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+      .ayah:hover {
+        background-color: #e2e6ea;
+      }
+      .ayah-number {
+        background-color: #11d822;
+        color: white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: -20px;
+        left: -20px;
+        font-size: 1.2rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .audio-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #11d822;
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        left: -40px;
+        transform: translateY(-50%);
+      }
+      .translation {
+        color: #495057;
+        font-size: 1rem;
+        margin-top: 10px;
+      }
+      .header {
+        background-color: #11d822;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header h1 {
+        font-family: 'Amiri', serif;
+      }
+    </style>
+</head>
+<body>
+    <main id="maincontent" class="content">
+      <div class="container-fluid p-2">
+        <div class="header">
+          <h1>Web Quran</h1>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="list-group shadow p-3 mb-5 bg-body-tertiary rounded" id="daftar-surah"></div>
+          </div>
+          <div class="col-md-8">
+            <div class="shadow p-3 mb-5 bg-body-tertiary rounded" id="text-arabic">
+              Silakan klik daftar surah
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="text-center">Copyright &copy; 2023</footer>
+    <script>
+      const BASE_URL = "https://equran.id/api/v2";
+      const quranSurah = async () => {
+        const endpoint = `${BASE_URL}/surat`;
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        return data.data;
+      };
+      const quranDetail = async (nomor) => {
+        const endpoint = `${BASE_URL}/surat/${nomor}`;
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        return data.data;
+      };
+
+      quranSurah().then((surat) => {
+        surat.forEach((surah) => {
+          const list = `<a href="#" class="list-group-item list-group-item-action" id="surah-${surah.nomor}">
+            <div>${surah.nomor}</div>
+            <div>${surah.namaLatin} (${surah.nama})</div>
+          </a>`;
+          document.querySelector("#daftar-surah").insertAdjacentHTML("beforeend", list);
+
+          document.querySelector(`#surah-${surah.nomor}`)
+            .addEventListener("click", function (event) {
+              event.preventDefault();
+              document.querySelector(`#text-arabic`).innerHTML = "";
+              quranDetail(surah.nomor).then((ayat) => {
+                ayat.ayat.forEach((ayah) => {
+                  const ayatHtml = `<div class="row mt-4">
+                    <div class="col-12">
+                      <div class="list-group shadow-sm fs-3 text-end amiri ayah" title="${ayah.teksIndonesia}">
+                        <div class="ayah-number">${ayah.nomorAyat}</div>
+                        <button class="audio-btn toggle-audio" data-audio-url="${ayah.audio['05']}">
+                          <i class="fa fa-play-circle"></i>
+                        </button>
+                        ${ayah.teksArab}
+                        <div class="translation">${ayah.teksIndonesia}</div>
+                      </div>
+                    </div>
+                  </div>`;
+                  document.querySelector(`#text-arabic`).insertAdjacentHTML("beforeend", ayatHtml);
+                });
+              });
+            });
+        });
+      });
+
+      document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('toggle-audio') || event.target.parentNode.classList.contains('toggle-audio')) {
+          event.preventDefault();
+          const button = event.target.closest('.toggle-audio');
+          const icon = button.querySelector('i');
+          let audioPlayer = button.audioPlayer;
+          if (!audioPlayer) {
+            const audioUrl = button.getAttribute('data-audio-url');
+            audioPlayer = new Audio(audioUrl);
+            button.audioPlayer = audioPlayer;
+            audioPlayer.onended = () => {
+              icon.classList.remove('fa-pause-circle');
+              icon.classList.add('fa-play-circle');
+            };
+          }
+
+          if (audioPlayer.paused) {
+            audioPlayer.play().catch(e => {
+              console.error("Error playing audio:", e);
+              alert("Gagal memainkan audio. Silakan cek konsol untuk detail error.");
+            });
+            icon.classList.remove('fa-play-circle');
+            icon.classList.add('fa-pause-circle');
+          } else {
+            audioPlayer.pause();
+            icon.classList.remove('fa-pause-circle');
+            icon.classList.add('fa-play-circle');
+          }
+        }
+      });
+    </script>
+</body>
+</html>
